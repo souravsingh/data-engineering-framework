@@ -1,0 +1,9 @@
+-r requirements.txt
+pytest>=7.4
+pytest-cov>=4.1
+pytest-mock>=3.11
+ruff>=0.1.0
+bandit>=1.7
+mypy>=1.5
+types-pyyaml>=6.0
+moto[s3,glue,emr]>=4.2

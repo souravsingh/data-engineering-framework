@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-engineering-framework"
+version = "0.1.0"
+description = "Data engineering framework with Redshift, Glue/EMR, and Medallion architecture"
+requires-python = ">=3.9"
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "boto3>=1.26",
+    "psycopg2-binary>=2.9",
+    "pyarrow>=12.0",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-mock>=3.11",
+    "ruff>=0.1.0",
+    "bandit>=1.7",
+    "mypy>=1.5",
+    "types-pyyaml>=6.0",
+    "moto[s3,glue,emr]>=4.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src --cov-report=xml --cov-report=html --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B"]
+ignore = ["S101"]
+
+[tool.mypy]
+python_version = "3.9"
+strict = false
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]

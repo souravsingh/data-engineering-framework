@@ -1,0 +1,43 @@
+name: customers_pipeline
+version: "1.0"
+
+source:
+  host: "${REDSHIFT_HOST}"
+  port: 5439
+  database: "${REDSHIFT_DB}"
+  schema_name: public
+  username: "${REDSHIFT_USER}"
+  password: "${REDSHIFT_PASSWORD}"
+  tables:
+    - name: customers
+      query: "SELECT customer_id, name, email, country, created_at FROM public.customers"
+      schema_name: public
+
+transformation:
+  engine: emr
+  emr:
+    cluster_id: "${EMR_CLUSTER_ID}"
+    region: us-east-1
+    spark_script: "s3://${S3_BUCKET}/scripts/customers_transform.py"
+    arguments:
+      - "--input-path"
+      - "s3://${S3_BUCKET}/bronze/customers"
+      - "--output-path"
+      - "s3://${S3_BUCKET}/silver/customers"
+
+medallion:
+  bronze:
+    path: "s3://${S3_BUCKET}/bronze/customers"
+    format: parquet
+  silver:
+    path: "s3://${S3_BUCKET}/silver/customers"
+    format: delta
+  gold:
+    path: "s3://${S3_BUCKET}/gold/customers"
+    format: parquet
+
+storage:
+  format: parquet
+  path: "s3://${S3_BUCKET}/output/customers"
+  options:
+    compression: gzip
