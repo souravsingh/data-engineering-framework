@@ -28,7 +28,30 @@ class RedshiftConfig(BaseModel):
 
 
 class GlueConfig(BaseModel):
-    """Configuration for an AWS Glue transformation job."""
+    """Configuration for an AWS Glue transformation job.
+
+    Attributes:
+        job_name: Name of the Glue job in the AWS Glue Data Catalog.
+        region: AWS region where the Glue job runs (default ``us-east-1``).
+        iam_role: ARN of the IAM role used by the Glue job.
+        script_location: S3 URI of the Glue ETL script (``s3://bucket/scripts/job.py``).
+        temp_dir: S3 URI Glue uses for temporary files.
+        arguments: Extra ``--key value`` arguments passed to every job run.
+        redshift_connection_name: Name of a pre-existing AWS Glue Data Catalog connection
+            of type ``JDBC`` pointing at Amazon Redshift.  When set, the connection name is
+            forwarded to the Glue job as the ``--redshift_connection_name`` argument so the
+            PySpark/Glue script can call
+            ``glueContext.create_dynamic_frame_from_options(connection_type="redshift", …)``.
+            Create the connection with
+            :meth:`~src.processors.glue.GlueProcessor.create_redshift_connection`.
+        subnet_id: VPC subnet ID used when *creating* a new Glue Redshift connection
+            (``PhysicalConnectionRequirements``).  Not required when the connection already
+            exists.
+        security_group_ids: List of VPC security-group IDs for the Glue Redshift connection's
+            physical connection requirements.
+        availability_zone: Availability zone for the Glue Redshift connection's physical
+            connection requirements.
+    """
 
     job_name: str
     region: str = "us-east-1"
@@ -36,6 +59,10 @@ class GlueConfig(BaseModel):
     script_location: str
     temp_dir: str
     arguments: dict[str, str] = {}
+    redshift_connection_name: str | None = None
+    subnet_id: str | None = None
+    security_group_ids: list[str] = []
+    availability_zone: str | None = None
 
 
 class EMRConfig(BaseModel):

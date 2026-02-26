@@ -32,6 +32,23 @@ def sample_glue_config():
 
 
 @pytest.fixture
+def sample_glue_config_with_connection():
+    """GlueConfig dict that includes a named Glue Redshift connection."""
+    return {
+        "job_name": "test-glue-job-conn",
+        "region": "us-east-1",
+        "iam_role": "arn:aws:iam::123456789012:role/GlueRole",
+        "script_location": "s3://bucket/scripts/job.py",
+        "temp_dir": "s3://bucket/temp/",
+        "arguments": {"--enable-metrics": "true"},
+        "redshift_connection_name": "my-redshift-connection",
+        "subnet_id": "subnet-0abc1234",
+        "security_group_ids": ["sg-0abc1234"],
+        "availability_zone": "us-east-1a",
+    }
+
+
+@pytest.fixture
 def sample_emr_config():
     return {
         "cluster_id": "j-ABCDEFG123456",
