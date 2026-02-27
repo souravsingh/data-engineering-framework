@@ -1,0 +1,53 @@
+name: orders_pipeline
+version: "1.0"
+
+source:
+  host: "${REDSHIFT_HOST}"
+  port: 5439
+  database: "${REDSHIFT_DB}"
+  schema_name: public
+  username: "${REDSHIFT_USER}"
+  password: "${REDSHIFT_PASSWORD}"
+  tables:
+    - name: orders
+      query: "SELECT order_id, customer_id, amount, created_at FROM public.orders"
+      schema_name: public
+    - name: order_items
+      query: "SELECT item_id, order_id, product_id, quantity, price FROM public.order_items"
+      schema_name: public
+
+transformation:
+  engine: glue
+  glue:
+    job_name: orders-etl-job
+    region: us-east-1
+    iam_role: "${GLUE_IAM_ROLE}"
+    script_location: "s3://${S3_BUCKET}/scripts/orders_transform.py"
+    temp_dir: "s3://${S3_BUCKET}/temp/"
+    # Named Glue Data Catalog connection of type JDBC pointing at Redshift.
+    # Create it once via GlueProcessor.create_redshift_connection(), then
+    # reference it here so credentials are never placed in job arguments.
+    redshift_connection_name: "${GLUE_REDSHIFT_CONNECTION_NAME}"
+    subnet_id: "${GLUE_SUBNET_ID}"
+    security_group_ids:
+      - "${GLUE_SECURITY_GROUP_ID}"
+    availability_zone: "${GLUE_AZ}"
+    arguments:
+      "--enable-metrics": "true"
+
+medallion:
+  bronze:
+    path: "s3://${S3_BUCKET}/bronze/orders"
+    format: parquet
+  silver:
+    path: "s3://${S3_BUCKET}/silver/orders"
+    format: parquet
+  gold:
+    path: "s3://${S3_BUCKET}/gold/orders"
+    format: parquet
+
+storage:
+  format: parquet
+  path: "s3://${S3_BUCKET}/output/orders"
+  options:
+    compression: snappy
